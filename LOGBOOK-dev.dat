@@ -1,0 +1,62 @@
+##################################
+Modification done on srun_REUS.sh
+13-10-2022
+##################################
+
+Added a portion of code after file copying to rundir to check if
+pull-coord1-init was the same between the start of the segment and the end.
+If reference changed then the mdp will be moved to [segment number].mdp.old
+
+%% Explanation note: This was needed for the cases where we gave different
+references on membrane simulations regarding the monolayer leaflets to use.
+For example if starting frames come from unrestrained MD, the pbc might've
+made the compound jump to the other side of the box, hence changing the
+reference monolayer
+
+Code added:
+``` 
+### Portion to ensure the compatibility of pull-references ###
+if [ \`awk '/pull-coord1-init/ {print \$3}' ${prefix}\${US}/${REUSprefix}_${sysname}.mdp\` != \`awk '/pull-coord1-init/ {print \$3}' ${rundir}/${prefix}\${US}/${REUSprefix}_${sysname}.mdp\` ];then 
+mv ${rundir}/${prefix}\${US}/${REUSprefix}_${sysname}.mdp ${rundir}/${prefix}${US}/${REUSprefix}_${sysname}_\${j}.mdp.old
+cp ${prefix}\${US}/${REUSprefix}_${sysname}.mdp ${rundir}/${prefix}${US}/${REUSprefix}_${sysname}.mdp
+echo "mdp file from US \${US} was exchanged." >> $rundir/${runname}_\${j}.blockinfo
+fi
+#####################################################
+```
+
+###########################################################################
+
+##################################
+Modification done on REUS.py
+17-10-2022
+##################################
+
+GLOBOUT derived from the pHRE doesn't work as intended, with successive
+exchanges it bugs out since it gets the index of the umbrella on a list
+which may not correspond to the correct index of the adjacent umbrella
+Ex.: list=[-05, -04, -03, -02, -01, +00 ] (0.20 ps)
+     list=[-04, -05, -03, -02, -01, +00 ] (0.40 ps) exchange -05_-04
+     when exchanging the windows -04_-03 it should trade on the list the
+     -05 with the -03, but since it gets the name -04 on the previous list
+     it results on
+     list=[-03, -05, -04, -02, -01, +00 ] (0.60 ps)
+     which is wrong since they did not exchange to the umbrella of index 0
+     (which is position -05).
+     
+
+Code added:
+ON def gen_vars_n_copy_gros
+``` 
+USs_tmp = [i for i in USs.keys()]
+```
+
+On def run_REUS
+```
+# Report exchanges
+with open(GLOBOUT, 'a') as fo:
+     fo.write('{0} '.format(initcurr + effsteps * dt))
+     for n, exc in enumerate(exc_list[0]):
+     US1, US2 = exc.split('_')
+     US1i, US2i = USs_tmp.index(US1), USs_tmp.index(US2) ### Change here ###
+     USs_exc[US2i], USs_exc[US1i] = USs_exc[US1i], USs_exc[US2i]``
+```

@@ -1,0 +1,155 @@
+#
+# --     This is a parameter file specific for delphi calculations    --
+#
+######################################################################
+#####       BEGIN of  Common parameters in all pbp files         #####
+######################################################################
+#
+# Ionic Strength (moles/litre [float])
+# WARINING: [ This is Overridden with the value from .pHmdp file ]
+export ionicstr=0.1
+#
+# Dielectric constant of molecular interior
+# WARINING: [ This is Overridden with the value from .pHmdp file ]
+export epsin=2.0
+#
+# Perfil (%: [float > 10])
+# WARINING: PERFIL, GRID SIZE and SCALE cannot be assigned at the same 
+#  time. They are not independent variables.
+# This is relative to the largest X, Y or Z vector in your molecule. 
+# If the magnitude of Y is larger than X and Z, and you have perfil=50
+# then Y will be half the box size. 
+# For Lysozyme whose max dimension is 47.343A in the Z vector, a 
+# perfil=90 will give 53 points with a scale equal to 1.0. 
+#### IMPORTANT: ####
+# The max and min in any axis includes the atom radius (coord + radius).
+####            ####
+# WARINING: [ This is Overridden with the value from .pHmdp file ]
+# Coment below if you are defining gsize and scale.
+#export perfilPb=80
+#export perfilPf=100
+#export perfilM=80
+#
+# Grid size (points: [integer])
+# WARINING: PERFIL, GRID SIZE and SCALE cannot be assigned at the same 
+#  time. They are not independent variables.
+# As in MEAD, this is an odd integer. Beware of the number of points
+# if you are doing focusing, because they need to be the same, or very 
+# approximate, in both boxes (coarse and focus). 
+# WARINING: [ This is Overridden with the value from .pHmdp file ]
+# Coment below if you define perfil and scale.
+export gsizeP=61
+export gsizeM=61
+#
+# Scale (grids/angstrom: [float])
+# WARINING: PERFIL, GRID SIZE and SCALE cannot be assigned at the same 
+#  time. They are not independent variables.
+# This is the reciprocal of one grid spacing. If scale is 1.0, is the
+# same as having points spaced by 1.0A, if scale=2.0, then space 
+# between grid points is 0.5A and if scale=4, the space between grid
+# points will be 0.25A. 
+####  WARNING: ####
+# Contrary to what maintainers said and to what is writen in the manual,
+# this is equal to MEAD with the difference that they use scale which is
+# spacing^(-1) [1/spacing]. The Final box dimension is (gsize-1)/scale,
+# and not gsize/scale.
+# WARINING: [ This is Overridden with the value from .pHmdp file ]
+export scaleP=1.0
+export scaleM=4.0
+#
+# Potential at Boundary (1, 2, 3 or 4)
+# An integer specifying the type of boundary condition imposed on the 
+# edge of the box. How the potential in the box edges is assigned. 
+# Options:
+#      1. Potential is zero (0.0).
+#      2. Dipole. The boundary potentials are approximated by the 
+#         Debye-Huckel potential of the equivalent dipole to the 
+#         molecular charge distribution.
+#      3. Focusing. 
+#      4. Coulombic. They are approximated by the sum of Debye-Huckel 
+#         potentials of all the charges.
+# WARINING: [ This is Overridden with the value from .pHmdp file ]
+export bndcon=4
+#
+# Max change ([float 0 < x < 1])
+# The convergence threshold value based on maximum change of potential.
+# Various values were tested and for Lysozyme it is possible to live with
+# differences in the 2nd or 3rd decimal place in the solvation energies 
+# in units of kT by using 0.01 instead of 0.0001. With a scale of 4.0 and
+# 237 points the gain in performance is 20%.
+# WARINING: [ This is Overridden with the value from .pHmdp file ]
+export maxc=0.01
+#
+# RMS change ([float 0 < x < 1])
+# The convergence threshold value based on root mean square change of 
+# potential. Similar to the Max change, but not tested.
+#export rmsc=0.001
+#
+#
+######################################################################
+#####        END of  Common parameters in all pbp files          #####
+######################################################################
+#
+#
+#
+#====================================================================#
+#=====           BEGIN Membrane Specific parameters             =====#
+#====================================================================#
+#
+# Maximun number of linear iteractions (integer > 3)
+# This in conjunction with maxc or rmsc determine when convergence is
+# achieved. Some tests were made with lysozyme and 100 steps gave an
+# increase in performance of 14% with only differences in the 2nd decimal
+# place in pKint, although differences may appear in the 1st decimal 
+# place in the Monte Carlo output (one case detected). This may be system
+# specific and require a test run.
+export linit=50
+#
+# Relaxation factor for linear Poisson-Boltzmann (spectral radius)
+# WARINING: Do not specify if you are not using PBC.
+# This is important when using periodic boundary conditions where the
+# convergence may not occur and actually give very strange results.
+# There is no magic value for this, you have to try. A value between 
+# 0.9 and 1.0 may be a good start.
+export relfac=0.20
+#
+# Maximum number of non linear iteractions (integer >= 0)
+# This was tested with lysozyme and when activated it does not use the
+# same convergence criterium as the linear and some linear steps are
+# always made (A more narrow convergence criteria is apparently used). 
+# A side effect of this is also the performance that is considerably 
+# decreased. The use of nonit with perfil=90 may give convergence 
+# problems. If you are using perfil, use perfil=80 instead.
+export nonit=5
+#
+# Relaxation factor for non-linear Poisson-Boltzmann ([float])
+# The program automatically assigns a relaxation factor for this as
+# well as for the linear case. It may happen that the choosen value
+# does not lead to convergence, and in that case you can assign a 
+# value yourself, which similarly to relfac, has to be tuned for each
+# system.
+export relpar=0.200
+#
+# Distribution of charges to the grid points (boolean)
+# Normally is set to false indicating a linear cubic interpolation of 
+# charges to grid points (nearest 8 grid points - klapper). When this is 
+# set to true this turns on a spherical charge interpolation (charge is 
+# spread over a wider region of space, gives higher accuracy for potentials 
+# less than 3 grid units from a charge). Delphi developers did not explore
+# this exhaustively.
+#export fcrg=true
+#
+# Periodic boundary conditions (boolean, boolean, boolean)
+# This option will override other boundary conditions on edges to which 
+# they are applied. Periodic boundary conditions can be applied in one or
+# more of the x, y or z directions. If you have a DNA molecule aligned with 
+# one of the axis, you choose a PERFIL (percent fill of the box) so that 
+# an integer number of turns just fill the box in the axis direction. 
+# One line per axis
+export pbx=true
+export pby=true
+#export pbz=true
+#
+# Percentage of slice atoms added to XY dimentions ([float])
+export slice=0.05
+

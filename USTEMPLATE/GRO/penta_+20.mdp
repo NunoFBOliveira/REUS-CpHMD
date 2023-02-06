@@ -1,0 +1,84 @@
+;
+;       User your_name
+;       
+;       Generic Input file
+;
+
+define              = 
+integrator          =  md
+tinit               =  0.0 ; Overridden with the value calculated by CpHMD
+dt                  =  0.002    ; ps !
+nsteps              =  500 ; Overridden with the value from .pHmdp file
+nstcalcenergy          =  5
+nstcomm                =  5
+nstxout-compressed     =  5000
+compressed-x-precision =  1000
+nstenergy              =  5000
+nstxout                =  0
+nstvout                =  0
+nstfout                =  0
+nstlog                 =  0
+
+;PME (to use PME uncomment this section and comment the GRF section)
+
+cutoff-scheme            = verlet
+nstlist                  = 10
+ns_type                  = grid
+rlist                    = 1.0
+coulombtype              = PME
+rcoulomb                 = 1.0
+vdwtype                  = cut-off
+rvdw                     = 1.0
+
+; Energy monitoring 
+; (ions - when present - should be added to the SOL group in the index file)
+energygrps          =  Protein SOL
+
+; v-rescaletemperature coupling is on available groups
+; This thermostat is similar to Berendsen coupling, but the stochastic 
+; term ensures that a proper canonical ensemble is generated.
+Tcoupl              =  v-rescale
+tc-grps             =  Protein  SOL
+tau_t               =  0.10     0.10
+ref_t               =  310.0    310.0 ; Overridden with the value from .pHmdp file   
+
+; Semi-Isotropic pressure coupling
+Pcoupl              =  Parrinello-Rahman
+Pcoupltype          =  semiisotropic
+tau_p               =  2.0
+compressibility     =  4.5e-5 4.5e-5
+ref_p               =  1.0 1.0
+
+constraint_algorithm=lincs
+lincs_order         =  8
+constraints         =  all-bonds
+lincs-warnangle     =  90
+
+; COM PULLING          
+; Pull: yes, no
+pull                     = yes 
+; pull-coord1-type: umbrella, constraint, constant-force, flat-bottom
+pull-coord1-type         = umbrella
+; pull-coord1-geometry: distance, direction or cylinder
+pull-coord1-geometry     = direction
+; Select components for the pull vector. default: Y Y Y
+pull-coord1-dim          = N N Y
+; Number of pull groups 
+pull-ngroups             = 2
+; What group to pull
+pull_ncoords             = 1
+; Group name, weight (default all 1), vector, init, rate (nm/ps), kJ/(mol*nm^2)
+pull-group2-name     	 = Monolayer2
+
+pull-group1-name     	 = Center_of_Interest
+;pull-group1-weight       =
+pull-group1-pbcatom      = 0
+pull_coord1_groups      = 1 2
+pull-coord1-start        = no; yes
+pull-coord1-vec          = 0.0 0.0 -1.0
+pull-coord1-k            = 1000          ; kJ mol^-1 nm^-2
+;pull-coord1-rate         = 0.000025 ; nm/ps -> 0.025 nm/ns -> 0.25 nm go in 10 ns
+pull-coord1-rate         = 0.0
+pull-coord1-init        = 2
+pull-nstxout             = 500
+pull-nstfout             = 500
